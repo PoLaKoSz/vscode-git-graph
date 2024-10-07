@@ -1115,6 +1115,14 @@ export interface ResponseRenameBranch extends ResponseWithErrorInfo {
 	readonly command: 'renameBranch';
 }
 
+export interface RequestRewordCommit extends RepoRequest {
+	readonly command: 'rewordCommit';
+	readonly commit: GitCommit;
+}
+export interface ResponseRewordCommit extends ResponseWithErrorInfo {
+	readonly command: 'rewordCommit';
+}
+
 export interface RequestRescanForRepos extends BaseMessage {
 	readonly command: 'rescanForRepos';
 }
@@ -1295,6 +1303,7 @@ export type RequestMessage =
 	| RequestPushTag
 	| RequestRebase
 	| RequestRenameBranch
+	| RequestRewordCommit
 	| RequestRescanForRepos
 	| RequestResetFileToRevision
 	| RequestResetToCommit
@@ -1359,6 +1368,7 @@ export type ResponseMessage =
 	| ResponseRebase
 	| ResponseRefresh
 	| ResponseRenameBranch
+	| ResponseRewordCommit
 	| ResponseResetFileToRevision
 	| ResponseResetToCommit
 	| ResponseRevertCommit

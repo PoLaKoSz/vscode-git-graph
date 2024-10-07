@@ -58,7 +58,7 @@ export class Logger extends Disposable {
  * @param n The number to be padded.
  * @returns The padded number.
  */
-function pad2(n: number) {
+export function pad2(n: number) {
 	return (n > 9 ? '' : '0') + n;
 }
 

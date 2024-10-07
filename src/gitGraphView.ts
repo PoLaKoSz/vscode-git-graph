@@ -537,6 +537,12 @@ export class GitGraphView extends Disposable {
 					error: await this.dataSource.renameBranch(msg.repo, msg.oldName, msg.newName)
 				});
 				break;
+			case 'rewordCommit':
+				this.sendMessage({
+					command: 'rewordCommit',
+					error: await this.dataSource.rewordCommit(msg)
+				});
+				break;
 			case 'rescanForRepos':
 				if (!(await this.repoManager.searchWorkspaceForRepos())) {
 					showErrorMessage('No Git repositories were found in the current workspace.');

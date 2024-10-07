@@ -4,6 +4,11 @@ View a Git Graph of your repository, and easily perform Git actions from the gra
 
 ![Recording of Git Graph](https://github.com/mhutchie/vscode-git-graph/raw/master/resources/demo.gif)
 
+## Development
+
+- `nvm use && npm i && npm run compile`
+- `F5` to launch extension
+
 ## Features
 
 * Git Graph View:
@@ -35,7 +40,7 @@ View a Git Graph of your repository, and easily perform Git actions from the gra
     * View uncommitted changes, and compare the uncommitted changes with any commit.
     * Hover over any commit vertex on the graph to see a tooltip indicating:
         * Whether the commit is included in the HEAD.
-        * Which branches, tags and stashes include the commit. 
+        * Which branches, tags and stashes include the commit.
     * Filter the branches shown in Git Graph using the 'Branches' dropdown menu. The options for filtering the branches are:
         * Show All branches
         * Select one or more branches to be viewed

@@ -826,7 +826,7 @@ class GitGraphView {
 
 		for (let i = 0; i < this.commits.length; i++) {
 			let commit = this.commits[i];
-			let message = '<span class="text">' + textFormatter.format(commit.message) + '</span>';
+			let message = '<span class="text d-block" tabindex="0">' + textFormatter.format(commit.message) + '</span><input class="inline-input d-none" type="text" value="' + commit.message + '">';
 			let date = formatShortDate(commit.date);
 			let branchLabels = getBranchLabels(commit.heads, commit.remotes);
 			let refBranches = '', refTags = '', j, k, refName, remoteName, refActive, refHtml, branchCheckedOutAtCommit: string | null = null;
@@ -2237,6 +2237,73 @@ class GitGraphView {
 			}
 		});
 
+		this.tableElem.addEventListener('keydown', (e) => {
+			if (e.key === 'F2') {
+				if (e.target === null) return;
+
+				const eventTarget = <Element>e.target!;
+				if (eventTarget === null) return;
+				if (isUrlElem(eventTarget)) return;
+
+				if (!eventTarget.classList.contains('text')) return;
+
+				e.stopPropagation();
+				const commitElem = <HTMLElement>eventTarget.closest('.commit')!;
+				const commit = this.getCommitOfElem(commitElem);
+				if (commit === null) return;
+
+				const input = <HTMLInputElement>eventTarget.nextSibling;
+				input.classList.add('d-block');
+				input.classList.remove('d-none');
+				input.select();
+				eventTarget.classList.remove('d-block');
+				eventTarget.classList.add('d-none');
+			} else if (e.key === 'Enter') {
+				if (e.target === null) return;
+
+				const eventTarget = <Element>e.target!;
+				if (eventTarget === null) return;
+				if (isUrlElem(eventTarget)) return;
+
+				if (!eventTarget.classList.contains('inline-input')) return;
+
+				e.stopPropagation();
+				const commitMessageSpan = <HTMLSpanElement>eventTarget.previousSibling;
+				if (commitMessageSpan === null) return;
+
+				commitMessageSpan.classList.add('d-block');
+				commitMessageSpan.classList.remove('d-none');
+				eventTarget.classList.remove('d-block');
+				eventTarget.classList.add('d-none');
+
+				const commit = this.getCommitOfElem(commitMessageSpan.closest('.commit')! as HTMLElement);
+				if (commit === null) return;
+
+				sendMessage({
+					command: 'rewordCommit',
+					commit: Object.assign(commit, { message: (eventTarget as HTMLInputElement).value}),
+					repo: this.currentRepo
+				});
+			} else if (e.key === 'Escape') {
+				if (e.target === null) return;
+
+				const eventTarget = <Element>e.target!;
+				if (eventTarget === null) return;
+				if (isUrlElem(eventTarget)) return;
+
+				if (!eventTarget.classList.contains('inline-input')) return;
+
+				e.stopPropagation();
+				const commitMessageSpan = <HTMLSpanElement>eventTarget.previousSibling;
+				if (commitMessageSpan === null) return;
+
+				commitMessageSpan.classList.add('d-block');
+				commitMessageSpan.classList.remove('d-none');
+				eventTarget.classList.remove('d-block');
+				eventTarget.classList.add('d-none');
+			}
+		});
+
 		// Register Double Click Event Handler
 		this.tableElem.addEventListener('dblclick', (e: MouseEvent) => {
 			if (e.target === null) return;
@@ -3365,6 +3432,9 @@ window.addEventListener('load', () => {
 				break;
 			case 'renameBranch':
 				refreshOrDisplayError(msg.error, 'Unable to Rename Branch');
+				break;
+			case 'rewordCommit':
+				refreshOrDisplayError(msg.error, 'Unable to Reword Commit');
 				break;
 			case 'resetFileToRevision':
 				refreshOrDisplayError(msg.error, 'Unable to Reset File to Revision');

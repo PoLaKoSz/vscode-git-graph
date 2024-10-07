@@ -1021,3 +1021,29 @@ label > input[type=radio]:checked ~ .customRadio:after{
 	-webkit-user-select:none;
 	user-select:none;
 }
+
+.d-block {
+	display: block;
+}
+
+.d-none {
+	display: none !important;
+}
+
+.inline-input {
+	background-color: rgba(128,128,128, 0);
+	border: 0px solid rgb(128 128 128);
+	color: white;
+	margin-left: 1px;
+	width: 100%;
+}
+
+.inline-input:hover {
+	border-radius: 2px;
+	border-width: 1px;
+	margin-left: 0px;
+}
+
+.commit .description .text:focus-visible {
+	outline: none;
+}

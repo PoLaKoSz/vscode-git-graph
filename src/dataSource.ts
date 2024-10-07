@@ -5,8 +5,8 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { AskpassEnvironment, AskpassManager } from './askpass/askpassManager';
 import { getConfig } from './config';
-import { Logger } from './logger';
-import { CommitOrdering, DateType, DeepWriteable, ErrorInfo, ErrorInfoExtensionPrefix, GitCommit, GitCommitDetails, GitCommitStash, GitConfigLocation, GitFileChange, GitFileStatus, GitPushBranchMode, GitRepoConfig, GitRepoConfigBranches, GitResetMode, GitSignature, GitSignatureStatus, GitStash, GitTagDetails, MergeActionOn, RebaseActionOn, SquashMessageFormat, TagType, Writeable } from './types';
+import { Logger, pad2 } from './logger';
+import { CommitOrdering, DateType, DeepWriteable, ErrorInfo, ErrorInfoExtensionPrefix, GitCommit, GitCommitDetails, GitCommitStash, GitConfigLocation, GitFileChange, GitFileStatus, GitPushBranchMode, GitRepoConfig, GitRepoConfigBranches, GitResetMode, GitSignature, GitSignatureStatus, GitStash, GitTagDetails, MergeActionOn, RebaseActionOn, RequestRewordCommit, SquashMessageFormat, TagType, Writeable } from './types';
 import { GitExecutable, GitVersionRequirement, UNABLE_TO_FIND_GIT_MSG, UNCOMMITTED, abbrevCommit, constructIncompatibleGitVersionMessage, doesVersionMeetRequirement, getPathFromStr, getPathFromUri, openGitTerminal, pathWithTrailingSlash, realpath, resolveSpawnOutput, showErrorMessage } from './utils';
 import { Disposable } from './utils/disposable';
 import { Event } from './utils/event';
@@ -959,6 +959,41 @@ export class DataSource extends Disposable {
 	 */
 	public renameBranch(repo: string, oldName: string, newName: string) {
 		return this.runGitCommand(['branch', '-m', oldName, newName], repo);
+	}
+
+	/**
+	 * Reword a commit in a repository.
+	 * @returns The ErrorInfo from the executed command.
+	 */
+	public async rewordCommit(request: RequestRewordCommit) {
+		const uncommittedChangesCount = await this.getUncommittedChanges(request.repo);
+		if (uncommittedChangesCount > 0) {
+			return 'Please, commit your changes or stash them before you can reword the commit.';
+		}
+
+		const currentBranchName = await this.spawnGit(['branch', '--show-current'], request.repo, (stdout) => stdout.trim());
+		const commits = await this.getLog(request.repo, [currentBranchName], 999, false, false, false, true, CommitOrdering.Topological, [], [], []);
+		const index = commits.findIndex(commit => commit.hash === request.commit.hash);
+		if (index < 0) {
+			return 'Couldn\'t find commit on the current branch.';
+		}
+
+		const branchLastCommitHash = await this.spawnGit(['log', '--max-count=1', '--pretty=format:%H', `${currentBranchName}`], request.repo, (stdout) => stdout.trim());
+		const date = new Date();
+		const time = `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}-${pad2(date.getHours())}-${pad2(date.getMinutes())}-${pad2(date.getSeconds())}`;
+		const branchName = `backup/${currentBranchName}-${time}`;
+		const checkout = false;
+		const force = false;
+		await this.createBranch(request.repo, branchName, `${branchLastCommitHash}`, checkout, force);
+
+		await this.resetToCommit(request.repo, `${request.commit.hash}~1`, GitResetMode.Hard);
+		await this.runGitCommand(['-c', `core.editor=echo ${request.commit.message} >`, 'cherry-pick', '--edit', `${request.commit.hash}`], request.repo);
+
+		for (const commit of commits.slice(0, index).reverse()) {
+			await this.cherrypickCommit(request.repo, commit.hash, 0, false, false);
+		}
+
+		return null;
 	}
 
 

@@ -222,7 +222,7 @@ code{
 	cursor:pointer;
 }
 
-#commitTable tr.commit.current span.description .text{
+#commitTable tr.commit.current{
 	font-weight:bold;
 }
 

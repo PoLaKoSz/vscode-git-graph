@@ -1072,3 +1072,20 @@ label > input[type=radio]:checked ~ .customRadio:after{
 	height: 500px;
 	overflow-y: auto;
 }
+
+#branch-tree {
+	height: 800px;
+	overflow: auto;
+}
+
+#branch-tree .show-branch {
+	margin: 0 10px;
+}
+
+#branch-tree .show-branch.active {
+	color: #00ffa5;
+}
+
+#branch-tree .hide-branch.active {
+	color: red;
+}

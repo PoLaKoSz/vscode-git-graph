@@ -1,3 +1,13 @@
+enum ForkBranchVisibility {
+	Filtered,
+	Hidden,
+}
+
+interface ForkBranch {
+	name: string;
+	visibility: ForkBranchVisibility | null;
+}
+
 class GitGraphView {
 	private gitRepos: GG.GitRepoSet;
 	private gitBranches: ReadonlyArray<string> = [];
@@ -12,6 +22,7 @@ class GitGraphView {
 	private onlyFollowFirstParent: boolean = false;
 	private avatars: AvatarImageCollection = {};
 	private currentBranches: string[] | null = null;
+	private branches: ForkBranch[] = [];
 
 	private currentRepo!: string;
 	private currentRepoLoading: boolean = true;
@@ -265,6 +276,36 @@ class GitGraphView {
 			}
 			if (this.currentBranches.length === 0) {
 				this.currentBranches.push(SHOW_ALL_BRANCHES);
+			}
+		}
+
+		this.branches = (this.currentBranches.includes(SHOW_ALL_BRANCHES)
+			? Array.from(this.getBranches())
+			: this.currentBranches)
+			.map(branchName => ({
+				name: branchName
+			}) as ForkBranch);
+		const branchTree = document.querySelector('#branch-tree')!;
+		for (const branchName of (this.gitBranches as string[]).sort((a, b) => a.localeCompare(b))) {
+			const li = document.createElement('li');
+			branchTree.appendChild(li);
+
+			{
+				let text = document.createElement('text');
+				text.textContent = `${branchName}`;
+				li.appendChild(text);
+
+				const showBranchBtn = document.createElement('span');
+				showBranchBtn.classList.add('show-branch');
+				showBranchBtn.dataset.branchName = branchName;
+				showBranchBtn.textContent = ' filter';
+				li.appendChild(showBranchBtn);
+
+				const hideBranchBtn = document.createElement('span');
+				hideBranchBtn.classList.add('hide-branch');
+				hideBranchBtn.dataset.branchName = branchName;
+				hideBranchBtn.textContent = ' hide';
+				li.appendChild(hideBranchBtn);
 			}
 		}
 
@@ -602,8 +643,27 @@ class GitGraphView {
 		});
 	}
 
-	private requestLoadCommits() {
+	private requestLoadCommits(forkVersion: boolean = false) {
 		const repoState = this.gitRepos[this.currentRepo];
+		if (forkVersion) {
+			sendMessage({
+				command: 'loadCommits',
+				repo: this.currentRepo,
+				refreshId: ++this.currentRepoRefreshState.loadCommitsRefreshId,
+				branches: this.currentBranches,
+				maxCommits: this.maxCommits,
+				showTags: true,
+				showRemoteBranches: true,
+				includeCommitsMentionedByReflogs: true,
+				onlyFollowFirstParent: getOnlyFollowFirstParent(repoState.onlyFollowFirstParent),
+				commitOrdering: GG.CommitOrdering.Date,
+				remotes: [],
+				hideRemotes: [],
+				stashes: []
+			});
+			return;
+		}
+
 		sendMessage({
 			command: 'loadCommits',
 			repo: this.currentRepo,
@@ -621,7 +681,7 @@ class GitGraphView {
 		});
 	}
 
-	private requestLoadRepoInfoAndCommits(hard: boolean, skipRepoInfo: boolean, configChanges: boolean = false) {
+	private requestLoadRepoInfoAndCommits(hard: boolean, skipRepoInfo: boolean, configChanges: boolean = false, forkVersion: boolean = false) {
 		const refreshState = this.currentRepoRefreshState;
 		if (refreshState.inProgress) {
 			refreshState.hard = refreshState.hard || hard;
@@ -646,7 +706,7 @@ class GitGraphView {
 
 		if (skipRepoInfo) {
 			if (!refreshState.requestingRepoInfo) {
-				this.requestLoadCommits();
+				this.requestLoadCommits(forkVersion);
 			}
 		} else {
 			refreshState.requestingRepoInfo = true;
@@ -2304,6 +2364,60 @@ class GitGraphView {
 			}
 		});
 
+		(document.querySelector('#branch-tree')! as HTMLElement).addEventListener('click', (e: MouseEvent) => {
+			if (e.target === null) return;
+			const eventTarget = <Element>e.target;
+			if (isUrlElem(eventTarget)) return;
+			let eventElem: HTMLElement | null;
+
+			let filtered = false;
+
+			if ((eventElem = eventTarget.closest('.show-branch')) !== null) {
+				e.stopPropagation();
+				closeDialogAndContextMenu();
+				filtered = true;
+
+				const branchName = (eventElem as HTMLElement).dataset.branchName!;
+				const branch = this.branches.find(b => b.name === branchName);
+				if (!branch) return;
+
+				const activate = !eventElem.classList.contains('active');
+				branch.visibility = activate ? ForkBranchVisibility.Filtered : null;
+				eventElem.classList.toggle('active', activate);
+				(eventElem.nextElementSibling as HTMLElement).classList.toggle('active', false);
+			} else if ((eventElem = eventTarget.closest('.hide-branch')) !== null) {
+				e.stopPropagation();
+				closeDialogAndContextMenu();
+				filtered = true;
+
+				const branchName = (eventElem as HTMLElement).dataset.branchName!;
+				const branch = this.branches.find(b => b.name === branchName);
+				if (!branch) return;
+
+				const activate = !eventElem.classList.contains('active');
+				branch.visibility = activate ? ForkBranchVisibility.Hidden : null;
+				eventElem.classList.toggle('active', activate);
+				(eventElem.previousElementSibling as HTMLElement).classList.toggle('active', false);
+			}
+
+			if (!filtered) return;
+
+			const hasExplicitlyFiltered = this.branches.some(b => b.visibility === ForkBranchVisibility.Filtered);
+			if (hasExplicitlyFiltered) {
+				this.currentBranches = this.branches
+					.filter(b => b.visibility === ForkBranchVisibility.Filtered)
+					.map(b => b.name);
+			} else {
+				this.currentBranches = this.branches
+					.filter(b => b.visibility !== ForkBranchVisibility.Hidden)
+					.map(b => b.name);
+			}
+			this.maxCommits = this.config.initialLoadCommits;
+			this.saveState();
+			this.clearCommits();
+			this.requestLoadRepoInfoAndCommits(true, true, false, true);
+		});
+
 		// Register Double Click Event Handler
 		this.tableElem.addEventListener('dblclick', (e: MouseEvent) => {
 			if (e.target === null) return;
@@ -3294,8 +3408,6 @@ const forkVerticalResizing = (e: Event) => {
 window.addEventListener('load', () => {
 	if (loaded) return;
 	loaded = true;
-
-	// kecske
 
 	for (const element of Array.from(document.querySelectorAll('.resizable.horizontal'))) {
 		element.addEventListener('mousedown', forkHorizontalResizing);

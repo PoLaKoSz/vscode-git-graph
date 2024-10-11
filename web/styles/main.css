@@ -1082,3 +1082,63 @@ body, .column-container, .row-container {
 	border-color: var(--vscode-notebook-cellToolbarSeparator);
 	width: 95%;
 }
+
+#branch-tree {
+	white-space: nowrap;
+}
+
+#branch-tree .show-branch {
+	margin: 0 10px;
+}
+
+#branch-tree .show-branch.active {
+	color: #00ffa5;
+}
+
+#branch-tree .hide-branch.active {
+	color: red;
+}
+
+#branch-filter {
+	background-color: rgba(128, 128, 128, 0.1);
+	border: 1px solid rgb(128 128 128 / 45%);
+	color: white;
+	margin-left: 20px;
+	padding: 5px;
+}
+
+ul.tree li {
+	list-style-type: none;
+	position: relative;
+}
+
+ul.tree li ul {
+	display: none;
+}
+
+ul.tree li.open > ul {
+	display: block;
+	padding-left: 10px;
+}
+
+ul.tree li a {
+	text-decoration: none;
+}
+
+ul.tree li a:before {
+	height: 1em;
+	padding:0 .1em;
+	font-size: .8em;
+	display: block;
+	position: absolute;
+	left: -1.3em;
+	top: .2em;
+}
+
+ul.tree li > a:not(:last-child):before {
+	content: '►';
+}
+
+ul.tree li.open > a:not(:last-child):before {
+	content: '▼';
+}

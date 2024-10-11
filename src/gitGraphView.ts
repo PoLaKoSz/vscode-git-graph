@@ -737,10 +737,9 @@ export class GitGraphView extends Disposable {
 							<li>github-icon</li>
 						</ul>
 					</div>
+					<input type="text" id="branch-filter" placeholder="Filter"></li>
 					<div class="dynamic-tab">
-						<div class="row-container">
-							<ul></ul>
-						</div>
+						<ul id="branch-tree" class="tree"></ul>
 					</div>
 				</div>
 				<div class="resizable divider vertical"></div>

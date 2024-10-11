@@ -45,6 +45,7 @@ declare global {
 	}
 
 	interface WebViewState {
+		readonly branchFilter: string;
 		readonly currentRepo: string;
 		readonly currentRepoLoading: boolean;
 		readonly gitRepos: GG.GitRepoSet;
@@ -54,6 +55,7 @@ declare global {
 		readonly gitRemotes: ReadonlyArray<string>;
 		readonly gitStashes: ReadonlyArray<GG.GitStash>;
 		readonly gitTags: ReadonlyArray<string>;
+		readonly forkBranches: ForkBranch[];
 		readonly commits: GG.GitCommit[];
 		readonly commitHead: string | null;
 		readonly avatars: AvatarImageCollection;

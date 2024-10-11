@@ -722,24 +722,44 @@ export class GitGraphView extends Disposable {
 			</body>`;
 		} else if (numRepos > 0) {
 			body = `<body>
-			<div id="view" tabindex="-1">
-				<div id="controls">
-					<span id="repoControl"><span class="unselectable">Repo: </span><div id="repoDropdown" class="dropdown"></div></span>
-					<span id="branchControl"><span class="unselectable">Branches: </span><div id="branchDropdown" class="dropdown"></div></span>
-					<label id="showRemoteBranchesControl"><input type="checkbox" id="showRemoteBranchesCheckbox" tabindex="-1"><span class="customCheckbox"></span>Show Remote Branches</label>
-					<div id="findBtn" title="Find"></div>
-					<div id="terminalBtn" title="Open a Terminal for this Repository"></div>
-					<div id="settingsBtn" title="Repository Settings"></div>
-					<div id="fetchBtn"></div>
-					<div id="refreshBtn"></div>
+			<div class="row full-screen">
+				<div id="navbar" class="column">
+					<ul>
+						<li>Changes (N/A)</li>
+						<li>All Commits</li>
+					</ul>
+					<ul class="horizontal">
+						<li>branches-icon</li>
+						<li>search-icon</li>
+						<li>github-icon</li>
+					</ul>
 				</div>
-				<div id="content">
-					<div id="commitGraph"></div>
-					<div id="commitTable"></div>
+				<div class="column resizable horizontal divider"></div>
+				<div class="column">
+					<div id="commit-list">
+						<div id="view" tabindex="-1">
+							<div id="controls">
+								<span id="repoControl"><span class="unselectable">Repo: </span><div id="repoDropdown" class="dropdown"></div></span>
+								<span id="branchControl"><span class="unselectable">Branches: </span><div id="branchDropdown" class="dropdown"></div></span>
+								<label id="showRemoteBranchesControl"><input type="checkbox" id="showRemoteBranchesCheckbox" tabindex="-1"><span class="customCheckbox"></span>Show Remote Branches</label>
+								<div id="findBtn" title="Find"></div>
+								<div id="terminalBtn" title="Open a Terminal for this Repository"></div>
+								<div id="settingsBtn" title="Repository Settings"></div>
+								<div id="fetchBtn"></div>
+								<div id="refreshBtn"></div>
+							</div>
+							<div id="content">
+								<div id="commitGraph"></div>
+								<div id="commitTable"></div>
+							</div>
+							<div id="footer"></div>
+						</div>
+						<div id="scrollShadow"></div>
+					</div>
+					<div class="column resizable vertical divider"></div>
+					<div id="commit-details"></div>
 				</div>
-				<div id="footer"></div>
 			</div>
-			<div id="scrollShadow"></div>
 			<script nonce="${nonce}">var initialState = ${JSON.stringify(initialState)}, globalState = ${JSON.stringify(globalState)}, workspaceState = ${JSON.stringify(workspaceState)};</script>
 			<script nonce="${nonce}" src="${this.getMediaUri('out.min.js')}"></script>
 			</body>`;

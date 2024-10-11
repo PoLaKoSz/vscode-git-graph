@@ -2582,7 +2582,7 @@ class GitGraphView {
 		const expandedCommit = this.expandedCommit;
 		if (expandedCommit === null || expandedCommit.commitElem === null) return;
 
-		let elem = document.getElementById('cdv'), html = '<div id="cdvContent">', isDocked = this.isCdvDocked();
+		let elem = document.getElementById('cdv'), html = '<div id="cdvContent" class="row">', isDocked = this.isCdvDocked();
 		const commitOrder = this.getCommitOrder(expandedCommit.commitHash, expandedCommit.compareWithHash === null ? expandedCommit.commitHash : expandedCommit.compareWithHash);
 		const codeReviewPossible = !expandedCommit.loading && commitOrder.to !== UNCOMMITTED;
 		const externalDiffPossible = !expandedCommit.loading && (expandedCommit.compareWithHash !== null || this.commits[this.commitLookup[expandedCommit.commitHash]].parents.length > 0);
@@ -2593,7 +2593,7 @@ class GitGraphView {
 			elem.className = isDocked ? 'docked' : 'inline';
 			this.setCdvHeight(elem, isDocked);
 			if (isDocked) {
-				document.body.appendChild(elem);
+				document.getElementById('commit-details')!.appendChild(elem);
 			} else {
 				insertAfter(elem, expandedCommit.commitElem);
 			}
@@ -2602,7 +2602,7 @@ class GitGraphView {
 		if (expandedCommit.loading) {
 			html += '<div id="cdvLoading">' + SVG_ICONS.loading + ' Loading ' + (expandedCommit.compareWithHash === null ? expandedCommit.commitHash !== UNCOMMITTED ? 'Commit Details' : 'Uncommitted Changes' : 'Commit Comparison') + ' ...</div>';
 		} else {
-			html += '<div id="cdvSummary">';
+			html += '<div id="cdvSummary" class="column">';
 			if (expandedCommit.compareWithHash === null) {
 				// Commit details should be shown
 				if (expandedCommit.commitHash !== UNCOMMITTED) {
@@ -2640,7 +2640,7 @@ class GitGraphView {
 				// Commit comparison should be shown
 				html += 'Displaying all changes from <b>' + commitOrder.from + '</b> to <b>' + (commitOrder.to !== UNCOMMITTED ? commitOrder.to : 'Uncommitted Changes') + '</b>.';
 			}
-			html += '</div><div id="cdvFiles">' + generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED) + '</div><div id="cdvDivider"></div>';
+			html += '</div><div id="cdvFiles" class="column">' + generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED) + '</div><div id="cdvDivider"></div>';
 		}
 		html += '</div><div id="cdvControls"><div id="cdvClose" class="cdvControlBtn" title="Close">' + SVG_ICONS.close + '</div>' +
 			(codeReviewPossible ? '<div id="cdvCodeReview" class="cdvControlBtn">' + SVG_ICONS.review + '</div>' : '') +
@@ -2776,6 +2776,7 @@ class GitGraphView {
 
 	private setCdvDivider() {
 		let percent = (this.gitRepos[this.currentRepo].cdvDivider * 100).toFixed(2) + '%';
+		percent = '50%';
 		let summaryElem = document.getElementById('cdvSummary'), dividerElem = document.getElementById('cdvDivider'), filesElem = document.getElementById('cdvFiles');
 		if (summaryElem !== null) summaryElem.style.width = percent;
 		if (dividerElem !== null) dividerElem.style.left = percent;
@@ -3243,9 +3244,65 @@ class GitGraphView {
 const contextMenu = new ContextMenu(), dialog = new Dialog(), eventOverlay = new EventOverlay();
 let loaded = false;
 
+const forkHorizontalResizing = (e: Event) => {
+	const divider = e?.target as HTMLElement;
+	const left = divider?.previousElementSibling as HTMLElement;
+	const right = divider?.nextElementSibling as HTMLElement;
+	if (divider === null || left === null || right === null) return;
+
+	const startX = divider.getBoundingClientRect().left;
+	const containerWidth = left.offsetWidth + divider.offsetWidth + right.offsetWidth;
+
+	const onResize: EventListener = (e: Event) => {
+		if (startX < 0) return;
+		const currentX = (<MouseEvent>e).clientX;
+		const percent = currentX / containerWidth;
+		left.style.width = `${(percent * 100).toFixed(2)}%`;
+	};
+
+	const onStopResize: EventListener = () => {
+		if (startX < 0) return;
+		eventOverlay.remove();
+	};
+
+	eventOverlay.create('horizontal-resize-overlay', onResize, onStopResize);
+};
+
+const forkVerticalResizing = (e: Event) => {
+	const divider = e?.target as HTMLElement;
+	const parentElement = divider.parentElement as HTMLElement;
+	const top = divider?.previousElementSibling as HTMLElement;
+	if (divider === null || parentElement === null || top === null/* || bottom === null*/) return;
+
+	const startY = divider.getBoundingClientRect().top;
+	const containerHeight = parentElement.offsetHeight;
+
+	const onResize: EventListener = (e: Event) => {
+		if (startY < 0) return;
+		const currentY = (<MouseEvent>e).clientY;
+		const percent = currentY / containerHeight;
+		top.style.height = `${(percent * 100).toFixed(2)}%`;
+	};
+
+	const onStopResize: EventListener = () => {
+		if (startY < 0) return;
+		eventOverlay.remove();
+	};
+
+	eventOverlay.create('vertical-resize-overlay', onResize, onStopResize);
+};
+
 window.addEventListener('load', () => {
 	if (loaded) return;
 	loaded = true;
+
+	for (const element of Array.from(document.querySelectorAll('.resizable.horizontal'))) {
+		element.addEventListener('mousedown', forkHorizontalResizing);
+	}
+
+	for (const element of Array.from(document.querySelectorAll('.resizable.vertical'))) {
+		element.addEventListener('mousedown', forkVerticalResizing);
+	}
 
 	TextFormatter.registerCustomEmojiMappings(initialState.config.customEmojiShortcodeMappings);
 

@@ -58,6 +58,7 @@ class GitGraphView {
 	private readonly branchDropdown: Dropdown;
 
 	private readonly viewElem: HTMLElement;
+	private readonly branchFilterElem: HTMLInputElement;
 	private readonly controlsElem: HTMLElement;
 	private readonly tableElem: HTMLElement;
 	private readonly footerElem: HTMLElement;
@@ -84,6 +85,7 @@ class GitGraphView {
 		this.controlsElem = document.getElementById('controls')!;
 		this.tableElem = document.getElementById('commitTable')!;
 		this.footerElem = document.getElementById('footer')!;
+		this.branchFilterElem = document.getElementById('branch-filter')! as HTMLInputElement;
 		this.scrollShadowElem = <HTMLInputElement>document.getElementById('scrollShadow')!;
 
 		viewElem.focus();
@@ -2416,6 +2418,14 @@ class GitGraphView {
 			this.saveState();
 			this.clearCommits();
 			this.requestLoadRepoInfoAndCommits(true, true, false, true);
+		});
+
+		this.branchFilterElem.addEventListener('input', (_: Event) => {
+			const branchName = this.branchFilterElem.value;
+			const branches = Array.from(document.querySelectorAll('#branch-tree > li')!);
+			for (const branch of branches) {
+				branch.classList.toggle('d-none', !branch.textContent?.includes(branchName));
+			}
 		});
 
 		// Register Double Click Event Handler

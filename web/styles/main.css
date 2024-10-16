@@ -1089,3 +1089,11 @@ label > input[type=radio]:checked ~ .customRadio:after{
 #branch-tree .hide-branch.active {
 	color: red;
 }
+
+#branch-filter {
+	background-color: rgba(128, 128, 128, 0.1);
+	border: 1px solid rgb(128 128 128 / 45%);
+	color: white;
+	margin-left: 20px;
+	padding: 5px;
+}

@@ -1097,3 +1097,43 @@ label > input[type=radio]:checked ~ .customRadio:after{
 	margin-left: 20px;
 	padding: 5px;
 }
+
+
+
+
+
+
+ul.tree li {
+	list-style-type: none;
+	position: relative;
+}
+
+ul.tree li ul {
+	display: none;
+}
+
+ul.tree li.open > ul {
+	display: block;
+}
+
+ul.tree li a {
+	text-decoration: none;
+}
+
+ul.tree li a:before {
+	height: 1em;
+	padding:0 .1em;
+	font-size: .8em;
+	display: block;
+	position: absolute;
+	left: -1.3em;
+	top: .2em;
+}
+
+ul.tree li > a:not(:last-child):before {
+	content: '►';
+}
+
+ul.tree li.open > a:not(:last-child):before {
+	content: '▼';
+}

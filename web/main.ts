@@ -287,28 +287,93 @@ class GitGraphView {
 			.map(branchName => ({
 				name: branchName
 			}) as ForkBranch);
-		const branchTree = document.querySelector('#branch-tree')!;
-		for (const branchName of (this.gitBranches as string[]).sort((a, b) => a.localeCompare(b))) {
-			const li = document.createElement('li');
-			branchTree.appendChild(li);
+		const branchTreeNode = document.querySelector('#branch-tree')!;
+		const branchNames = (this.gitBranches as string[]).sort((a, b) => b.localeCompare(a));
+		interface ForkUiBranch {
+			fullName: string,
+			children: {[key:string]:ForkUiBranch},
+			name: string
+		};
+		const branchTree = {
+			children: {}
+		} as ForkUiBranch;
+		for (const b of branchNames) {
+			const c = b.split('/');
+			let parentNode = branchTree;
+			for (let index = 0; index < c.length; index++) {
+				const branchSegment = c[index];
+				if (!(branchSegment in parentNode.children)) {
+					parentNode.children[branchSegment] = {
+						fullName: b,
+						children: {},
+						name: branchSegment
+					} as ForkUiBranch;
+				}
 
-			{
-				let text = document.createElement('text');
-				text.textContent = `${branchName}`;
-				li.appendChild(text);
-
-				const showBranchBtn = document.createElement('span');
-				showBranchBtn.classList.add('show-branch');
-				showBranchBtn.dataset.branchName = branchName;
-				showBranchBtn.textContent = ' filter';
-				li.appendChild(showBranchBtn);
-
-				const hideBranchBtn = document.createElement('span');
-				hideBranchBtn.classList.add('hide-branch');
-				hideBranchBtn.dataset.branchName = branchName;
-				hideBranchBtn.textContent = ' hide';
-				li.appendChild(hideBranchBtn);
+				parentNode = parentNode.children[branchSegment];
 			}
+		}
+
+		{
+			const leaf = (c: ForkUiBranch) => {
+				return Object.keys(c.children).length === 0;
+			};
+
+			const sortPredicate = (a: ForkUiBranch, b: ForkUiBranch) => {
+				if (leaf(a) && !leaf(b)) {
+					return 1;
+				} else if (!leaf(a) && leaf(b)) {
+					return -1;
+				}
+
+				return a.name.localeCompare(b.name);
+			};
+
+			const recursiveRender = (node: ForkUiBranch, container: HTMLElement) => {
+				const li = document.createElement('li');
+				container.appendChild(li);
+				const isLeaf = leaf(node);
+				const element = document.createElement(isLeaf ? 'text' : 'a');
+				element.textContent = `${node.name}`;
+				li.appendChild(element);
+
+				if (isLeaf) {
+					const showBranchBtn = document.createElement('span');
+					showBranchBtn.classList.add('show-branch');
+					showBranchBtn.dataset.branchName = node.fullName;
+					showBranchBtn.textContent = ' filter';
+					li.appendChild(showBranchBtn);
+
+					const hideBranchBtn = document.createElement('span');
+					hideBranchBtn.classList.add('hide-branch');
+					hideBranchBtn.dataset.branchName = node.fullName;
+					hideBranchBtn.textContent = ' hide';
+					li.appendChild(hideBranchBtn);
+					return;
+				}
+
+				li.classList.add('open');
+
+				const ul = document.createElement('ul');
+				li.appendChild(ul);
+				for (const child of Object.entries(node.children).map(e => e[1]).sort(sortPredicate)) {
+					recursiveRender(child, ul);
+				}
+			};
+
+			for (const child of Object.entries(branchTree.children).map(e => e[1]).sort(sortPredicate)) {
+				recursiveRender(child, branchTreeNode as HTMLUListElement);
+			}
+		}
+
+		const tree = document.querySelectorAll('ul.tree a:not(:last-child)');
+		for(let i = 0; i < tree.length; i++) {
+			tree[i].addEventListener('click', function (e) {
+				const parent = (e.target as HTMLElement).parentElement!;
+				const classList = parent.classList;
+				classList.toggle('open', !classList.contains('open'));
+				e.preventDefault();
+			});
 		}
 
 		this.saveState();

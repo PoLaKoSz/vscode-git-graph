@@ -1042,11 +1042,11 @@ export class DataSource extends Disposable {
 		if (interactive) {
 			return this.openGitTerminal(
 				repo,
-				'rebase --interactive ' + (getConfig().signCommits ? '-S ' : '') + (actionOn === RebaseActionOn.Branch ? obj.replace(/'/g, '"\'"') : obj),
+				'rebase --interactive --committer-date-is-author-date --rebase-merges ' + (getConfig().signCommits ? '-S ' : '') + (actionOn === RebaseActionOn.Branch ? obj.replace(/'/g, '"\'"') : obj),
 				'Rebase on "' + (actionOn === RebaseActionOn.Branch ? obj : abbrevCommit(obj)) + '"'
 			);
 		} else {
-			const args = ['rebase', obj];
+			const args = ['rebase', '--committer-date-is-author-date', '--rebase-merges', obj];
 			if (ignoreDate) {
 				args.push('--ignore-date');
 			}

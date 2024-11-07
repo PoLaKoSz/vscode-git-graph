@@ -722,42 +722,64 @@ export class GitGraphView extends Disposable {
 			</body>`;
 		} else if (numRepos > 0) {
 			body = `<body>
-			<div class="row full-screen">
-				<div id="navbar" class="column">
-					<ul>
-						<li>Changes (N/A)</li>
-						<li>All Commits</li>
-					</ul>
-					<ul class="horizontal">
-						<li>branches-icon</li>
-						<li>search-icon</li>
-						<li>github-icon</li>
-					</ul>
-				</div>
-				<div class="column resizable horizontal divider"></div>
-				<div class="column">
-					<div id="commit-list">
-						<div id="view" tabindex="-1">
-							<div id="controls">
-								<span id="repoControl"><span class="unselectable">Repo: </span><div id="repoDropdown" class="dropdown"></div></span>
-								<span id="branchControl"><span class="unselectable">Branches: </span><div id="branchDropdown" class="dropdown"></div></span>
-								<label id="showRemoteBranchesControl"><input type="checkbox" id="showRemoteBranchesCheckbox" tabindex="-1"><span class="customCheckbox"></span>Show Remote Branches</label>
-								<div id="findBtn" title="Find"></div>
-								<div id="terminalBtn" title="Open a Terminal for this Repository"></div>
-								<div id="settingsBtn" title="Repository Settings"></div>
-								<div id="fetchBtn"></div>
-								<div id="refreshBtn"></div>
-							</div>
-							<div id="content">
-								<div id="commitGraph"></div>
-								<div id="commitTable"></div>
-							</div>
-							<div id="footer"></div>
-						</div>
-						<div id="scrollShadow"></div>
+			<div class="row-container">
+				<div class="column-container">
+					<div class="row-container">
+						<ul>
+							<li>Changes (N/A)</li>
+							<li>All Commits</li>
+						</ul>
 					</div>
-					<div class="column resizable vertical divider"></div>
-					<div id="commit-details"></div>
+					<div class="row-container">
+						<ul>
+							<li>branches-icon</li>
+							<li>search-icon</li>
+							<li>github-icon</li>
+						</ul>
+					</div>
+					<div class="dynamic-tab">
+						<div class="row-container">
+							<ul></ul>
+						</div>
+					</div>
+				</div>
+				<div class="resizable divider vertical"></div>
+				<div class="column-container">
+					<div class="dynamic-tab">
+						<div>
+							<div id="view" tabindex="-1">
+								<div id="controls">
+									<span id="repoControl"><span class="unselectable">Repo: </span><div id="repoDropdown" class="dropdown"></div></span>
+									<span id="branchControl"><span class="unselectable">Branches: </span><div id="branchDropdown" class="dropdown"></div></span>
+									<label id="showRemoteBranchesControl"><input type="checkbox" id="showRemoteBranchesCheckbox" tabindex="-1"><span class="customCheckbox"></span>Show Remote Branches</label>
+									<div id="findBtn" title="Find"></div>
+									<div id="terminalBtn" title="Open a Terminal for this Repository"></div>
+									<div id="settingsBtn" title="Repository Settings"></div>
+									<div id="fetchBtn"></div>
+									<div id="refreshBtn"></div>
+								</div>
+								<div id="content">
+									<div id="commitGraph"></div>
+									<div id="commitTable"></div>
+								</div>
+								<div id="footer"></div>
+							</div>
+							<div id="scrollShadow"></div>
+						</div>
+					</div>
+					<div class="resizable divider horizontal"></div>
+					<div class="column-container dynamic-tab">
+						<div>
+							<span>Commit</span>
+							<span>Changes</span>
+							<span>File Tree</span>
+						</div>
+						<div id="commit-details" class="row-container dynamic-tab d-none"></div>
+						<div class="row-container dynamic-tab">
+							<div id="fork-commit-meta-container" class="column-container dynamic-tab"></div>
+							<div id="fork-commit-file-diff" class="column-container dynamic-tab"></div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<script nonce="${nonce}">var initialState = ${JSON.stringify(initialState)}, globalState = ${JSON.stringify(globalState)}, workspaceState = ${JSON.stringify(workspaceState)};</script>

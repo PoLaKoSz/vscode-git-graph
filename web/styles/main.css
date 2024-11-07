@@ -1025,18 +1025,30 @@ label > input[type=radio]:checked ~ .customRadio:after{
 
 
 
-.row {
-	display: table;
-	width: 100%;
-}
-
-.column {
-	display: table-cell;
-}
-
-.full-screen {
+body {
 	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body, .column-container, .row-container {
+	display: flex;
+}
+
+.column-container {
+	flex-direction: column;
 	width: 100%;
+}
+
+.row-container {
+	align-items: normal;
+	flex-direction: row;
+	width: 100%;
+}
+
+.dynamic-tab {
+	overflow-y: auto;
+	flex-grow: 1;
 }
 
 #navbar {
@@ -1057,19 +1069,11 @@ label > input[type=radio]:checked ~ .customRadio:after{
 }
 
 .resizable.horizontal.divider {
-	cursor: ew-resize;
-	width: 5px;
-}
-
-.resizable.vertical.divider {
 	cursor: ns-resize;
-	display: block;
 	height: 5px;
 }
 
-#commit-list {
-	max-height: 90%;
-	min-height: 10%;
-	height: 70%;
-	overflow-y: auto;
+.resizable.vertical.divider {
+	cursor: ew-resize;
+	width: 5px;
 }

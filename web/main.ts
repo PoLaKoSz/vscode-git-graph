@@ -2633,6 +2633,18 @@ class GitGraphView {
 						+ '</span>'
 						+ (expandedCommit.avatar !== null ? '<span class="cdvSummaryAvatar"><img src="' + expandedCommit.avatar + '"></span>' : '')
 						+ '</span></span><br><br>' + textFormatter.format(commitDetails.body);
+					document.querySelector('#fork-commit-meta-container')!.innerHTML = `
+						<div>
+							<b>Commit:</b> ${escapeHtml(commitDetails.hash)}<br>
+							<b>Parents:</b>${parents}<br>
+							<b>Author:</b> ${escapeHtml(commitDetails.author)} ${(commitDetails.authorEmail !== '' ? `&lt;<a class="${CLASS_EXTERNAL_URL}" href="mailto:${escapeHtml(commitDetails.authorEmail)}" tabindex="-1">${escapeHtml(commitDetails.authorEmail)}</a>&gt;` : '')} ${(commitDetails.authorDate !== commitDetails.committerDate ? `<b>Author Date:</b> ${formatLongDate(commitDetails.authorDate)}` : '')}<br>
+							<b>Committer:</b> ${escapeHtml(commitDetails.committer)} ${(commitDetails.committerEmail !== '' ? `&lt;<a class="${CLASS_EXTERNAL_URL}" href="mailto:${escapeHtml(commitDetails.committerEmail)}" tabindex="-1">${escapeHtml(commitDetails.committerEmail)}</a>&gt;` : '')} ${(commitDetails.signature !== null ? generateSignatureHtml(commitDetails.signature) : '')}<br>
+							<b>${(commitDetails.authorDate !== commitDetails.committerDate ? 'Committer ' : '')}Date:</b>${formatLongDate(commitDetails.committerDate)}<br>
+							${(expandedCommit.avatar !== null ? `<span class="cdvSummaryAvatar"><img src="${expandedCommit.avatar}"></span>` : '')}<br>
+							<br>
+							${textFormatter.format(commitDetails.body)}
+						</div>`;
+					document.querySelector('#fork-commit-file-diff')!.innerHTML = generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED);
 				} else {
 					html += 'Displaying all uncommitted changes.';
 				}
@@ -2640,9 +2652,9 @@ class GitGraphView {
 				// Commit comparison should be shown
 				html += 'Displaying all changes from <b>' + commitOrder.from + '</b> to <b>' + (commitOrder.to !== UNCOMMITTED ? commitOrder.to : 'Uncommitted Changes') + '</b>.';
 			}
-			html += '</div><div id="cdvFiles" class="column">' + generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED) + '</div><div id="cdvDivider"></div>';
+			html += '</div><div id="cdvFiles" class="column">' + generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED) + '</div><div id="cdvDivider" class="d-none"></div>';
 		}
-		html += '</div><div id="cdvControls"><div id="cdvClose" class="cdvControlBtn" title="Close">' + SVG_ICONS.close + '</div>' +
+		html += '</div><div id="cdvControls" class="d-none"><div id="cdvClose" class="cdvControlBtn" title="Close">' + SVG_ICONS.close + '</div>' +
 			(codeReviewPossible ? '<div id="cdvCodeReview" class="cdvControlBtn">' + SVG_ICONS.review + '</div>' : '') +
 			(!expandedCommit.loading ? '<div id="cdvFileViewTypeTree" class="cdvControlBtn cdvFileViewTypeBtn" title="File Tree View">' + SVG_ICONS.fileTree + '</div><div id="cdvFileViewTypeList" class="cdvControlBtn cdvFileViewTypeBtn" title="File List View">' + SVG_ICONS.fileList + '</div>' : '') +
 			(externalDiffPossible ? '<div id="cdvExternalDiff" class="cdvControlBtn">' + SVG_ICONS.linkExternal + '</div>' : '') +
@@ -3246,22 +3258,21 @@ let loaded = false;
 
 const forkHorizontalResizing = (e: Event) => {
 	const divider = e?.target as HTMLElement;
-	const left = divider?.previousElementSibling as HTMLElement;
-	const right = divider?.nextElementSibling as HTMLElement;
-	if (divider === null || left === null || right === null) return;
+	const parentElement = divider.parentElement as HTMLElement;
+	const top = divider?.previousElementSibling as HTMLElement;
+	const bottom = divider?.nextElementSibling as HTMLElement;
+	if (bottom === null || divider === null || parentElement === null || top === null) return;
 
-	const startX = divider.getBoundingClientRect().left;
-	const containerWidth = left.offsetWidth + divider.offsetWidth + right.offsetWidth;
+	const containerHeight = parentElement.offsetHeight;
 
 	const onResize: EventListener = (e: Event) => {
-		if (startX < 0) return;
-		const currentX = (<MouseEvent>e).clientX;
-		percent = currentX / containerWidth * 100;
-		left.style.width = `${percent.toFixed(2)}%`;
+		const currentY = (<MouseEvent>e).clientY;
+		percent = Math.max(0, currentY) / containerHeight * 100;
+		top.style.height = `${percent.toFixed(2)}%`;
+		bottom.style.height = `${(100 - percent).toFixed(2)}%`;
 	};
 
 	const onStopResize: EventListener = () => {
-		if (startX < 0) return;
 		eventOverlay.remove();
 		updateGlobalViewState('ui_horizontal_divider', percent);
 	};
@@ -3273,21 +3284,20 @@ const forkHorizontalResizing = (e: Event) => {
 const forkVerticalResizing = (e: Event) => {
 	const divider = e?.target as HTMLElement;
 	const parentElement = divider.parentElement as HTMLElement;
-	const top = divider?.previousElementSibling as HTMLElement;
-	if (divider === null || parentElement === null || top === null/* || bottom === null*/) return;
+	const left = divider?.previousElementSibling as HTMLElement;
+	const right = divider?.nextElementSibling as HTMLElement;
+	if (divider === null || parentElement === null || left === null || left === null) return;
 
-	const startY = divider.getBoundingClientRect().top;
-	const containerHeight = parentElement.offsetHeight;
+	const containerWidth = left.offsetWidth + divider.offsetWidth + right.offsetWidth;
 
 	const onResize: EventListener = (e: Event) => {
-		if (startY < 0) return;
-		const currentY = (<MouseEvent>e).clientY;
-		percent = currentY / containerHeight * 100;
-		top.style.height = `${percent.toFixed(2)}%`;
+		const currentX = (<MouseEvent>e).clientX;
+		percent = Math.max(0, currentX) / containerWidth * 100;
+		left.style.width = `${percent.toFixed(2)}%`;
+		right.style.width = `${(100 - percent).toFixed(2)}%`;
 	};
 
 	const onStopResize: EventListener = () => {
-		if (startY < 0) return;
 		eventOverlay.remove();
 		updateGlobalViewState('ui_vertical_divider', percent);
 	};
@@ -3302,12 +3312,14 @@ window.addEventListener('load', () => {
 
 	for (const element of Array.from(document.querySelectorAll('.resizable.horizontal'))) {
 		element.addEventListener('mousedown', forkHorizontalResizing);
-		(element.previousElementSibling as HTMLElement).style.width = `${globalState.ui_horizontal_divider}%`;
+		(element.previousElementSibling as HTMLElement).style.height = `${globalState.ui_horizontal_divider}%`;
+		(element.nextElementSibling as HTMLElement).style.height = `${100 - globalState.ui_horizontal_divider}%`;
 	}
 
 	for (const element of Array.from(document.querySelectorAll('.resizable.vertical'))) {
 		element.addEventListener('mousedown', forkVerticalResizing);
-		(element.previousElementSibling as HTMLElement).style.height = `${globalState.ui_vertical_divider}%`;
+		(element.previousElementSibling as HTMLElement).style.width = `${globalState.ui_vertical_divider}%`;
+		(element.nextElementSibling as HTMLElement).style.width = `${100 - globalState.ui_vertical_divider}%`;
 	}
 
 	TextFormatter.registerCustomEmojiMappings(initialState.config.customEmojiShortcodeMappings);

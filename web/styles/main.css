@@ -1077,3 +1077,8 @@ body, .column-container, .row-container {
 	cursor: ew-resize;
 	width: 5px;
 }
+
+#fork-commit-meta-container hr {
+	border-color: var(--vscode-notebook-cellToolbarSeparator);
+	width: 95%;
+}

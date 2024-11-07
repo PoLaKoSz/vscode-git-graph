@@ -2635,14 +2635,22 @@ class GitGraphView {
 						+ '</span></span><br><br>' + textFormatter.format(commitDetails.body);
 					document.querySelector('#fork-commit-meta-container')!.innerHTML = `
 						<div>
-							<b>Commit:</b> ${escapeHtml(commitDetails.hash)}<br>
-							<b>Parents:</b>${parents}<br>
-							<b>Author:</b> ${escapeHtml(commitDetails.author)} ${(commitDetails.authorEmail !== '' ? `&lt;<a class="${CLASS_EXTERNAL_URL}" href="mailto:${escapeHtml(commitDetails.authorEmail)}" tabindex="-1">${escapeHtml(commitDetails.authorEmail)}</a>&gt;` : '')} ${(commitDetails.authorDate !== commitDetails.committerDate ? `<b>Author Date:</b> ${formatLongDate(commitDetails.authorDate)}` : '')}<br>
-							<b>Committer:</b> ${escapeHtml(commitDetails.committer)} ${(commitDetails.committerEmail !== '' ? `&lt;<a class="${CLASS_EXTERNAL_URL}" href="mailto:${escapeHtml(commitDetails.committerEmail)}" tabindex="-1">${escapeHtml(commitDetails.committerEmail)}</a>&gt;` : '')} ${(commitDetails.signature !== null ? generateSignatureHtml(commitDetails.signature) : '')}<br>
-							<b>${(commitDetails.authorDate !== commitDetails.committerDate ? 'Committer ' : '')}Date:</b>${formatLongDate(commitDetails.committerDate)}<br>
-							${(expandedCommit.avatar !== null ? `<span class="cdvSummaryAvatar"><img src="${expandedCommit.avatar}"></span>` : '')}<br>
+							<p>Author</p>
+							${(expandedCommit.avatar !== null ? `<span class="cdvSummaryAvatar"><img src="${expandedCommit.avatar}"></span><br>` : '')}
+							<b>${escapeHtml(commitDetails.author)}</b> ${escapeHtml(commitDetails.authorEmail)}<br>
+							${formatLongDate(commitDetails.authorDate)}<br>
+							SHA: ${escapeHtml(commitDetails.hash)}<br>
+							Parents: ${parents}<br>
+
+							${(commitDetails.committerDate !== commitDetails.authorDate ? `
+								<p>Committer</p>
+								<b>${escapeHtml(commitDetails.committer)}</b> ${escapeHtml(commitDetails.committerEmail)}<br>
+								${formatLongDate(commitDetails.committerDate)}<br>
+							` : '')}
 							<br>
-							${textFormatter.format(commitDetails.body)}
+							<hr>
+							<b>${textFormatter.format(commitDetails.body.split('\n')[0])}</b><br>
+							${textFormatter.format(commitDetails.body.split('\n').slice(1).join('\n'))}
 						</div>`;
 					document.querySelector('#fork-commit-file-diff')!.innerHTML = generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED);
 				} else {

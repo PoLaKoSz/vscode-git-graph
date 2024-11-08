@@ -2652,15 +2652,19 @@ class GitGraphView {
 							<b>${textFormatter.format(commitDetails.body.split('\n')[0])}</b><br>
 							${textFormatter.format(commitDetails.body.split('\n').slice(1).join('\n'))}
 						</div>`;
-					document.querySelector('#fork-commit-file-diff')!.innerHTML = generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED);
 				} else {
 					html += 'Displaying all uncommitted changes.';
 				}
 			} else {
 				// Commit comparison should be shown
 				html += 'Displaying all changes from <b>' + commitOrder.from + '</b> to <b>' + (commitOrder.to !== UNCOMMITTED ? commitOrder.to : 'Uncommitted Changes') + '</b>.';
+				document.querySelector('#fork-commit-meta-container')!.innerHTML = `
+					<div>
+						Compare <b>${commitOrder.from}</b> to <b>${(commitOrder.to !== UNCOMMITTED ? commitOrder.to : 'uncommitted changes')}</b>.
+					</div>`;
 			}
 			html += '</div><div id="cdvFiles" class="column">' + generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED) + '</div><div id="cdvDivider" class="d-none"></div>';
+			document.querySelector('#fork-commit-file-diff')!.innerHTML = generateFileViewHtml(expandedCommit.fileTree!, expandedCommit.fileChanges!, expandedCommit.lastViewedFile, expandedCommit.contextMenuOpen.fileView, this.getFileViewType(), commitOrder.to === UNCOMMITTED);
 		}
 		html += '</div><div id="cdvControls" class="d-none"><div id="cdvClose" class="cdvControlBtn" title="Close">' + SVG_ICONS.close + '</div>' +
 			(codeReviewPossible ? '<div id="cdvCodeReview" class="cdvControlBtn">' + SVG_ICONS.review + '</div>' : '') +

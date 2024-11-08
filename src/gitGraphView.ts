@@ -746,26 +746,24 @@ export class GitGraphView extends Disposable {
 				<div class="resizable divider vertical"></div>
 				<div class="column-container">
 					<div class="dynamic-tab">
-						<div>
-							<div id="view" tabindex="-1">
-								<div id="controls">
-									<span id="repoControl"><span class="unselectable">Repo: </span><div id="repoDropdown" class="dropdown"></div></span>
-									<span id="branchControl"><span class="unselectable">Branches: </span><div id="branchDropdown" class="dropdown"></div></span>
-									<label id="showRemoteBranchesControl"><input type="checkbox" id="showRemoteBranchesCheckbox" tabindex="-1"><span class="customCheckbox"></span>Show Remote Branches</label>
-									<div id="findBtn" title="Find"></div>
-									<div id="terminalBtn" title="Open a Terminal for this Repository"></div>
-									<div id="settingsBtn" title="Repository Settings"></div>
-									<div id="fetchBtn"></div>
-									<div id="refreshBtn"></div>
-								</div>
-								<div id="content">
-									<div id="commitGraph"></div>
-									<div id="commitTable"></div>
-								</div>
-								<div id="footer"></div>
+						<div id="view" tabindex="-1">
+							<div id="controls">
+								<span id="repoControl"><span class="unselectable">Repo: </span><div id="repoDropdown" class="dropdown"></div></span>
+								<span id="branchControl"><span class="unselectable">Branches: </span><div id="branchDropdown" class="dropdown"></div></span>
+								<label id="showRemoteBranchesControl"><input type="checkbox" id="showRemoteBranchesCheckbox" tabindex="-1"><span class="customCheckbox"></span>Show Remote Branches</label>
+								<div id="findBtn" title="Find"></div>
+								<div id="terminalBtn" title="Open a Terminal for this Repository"></div>
+								<div id="settingsBtn" title="Repository Settings"></div>
+								<div id="fetchBtn"></div>
+								<div id="refreshBtn"></div>
 							</div>
-							<div id="scrollShadow"></div>
+							<div id="content">
+								<div id="commitGraph"></div>
+								<div id="commitTable"></div>
+							</div>
+							<div id="footer"></div>
 						</div>
+						<div id="scrollShadow"></div>
 					</div>
 					<div class="resizable divider horizontal"></div>
 					<div class="column-container dynamic-tab">

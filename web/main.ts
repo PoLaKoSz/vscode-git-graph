@@ -344,6 +344,7 @@ class GitGraphView {
 				li.appendChild(element);
 
 				if (isLeaf) {
+					li.dataset.branchName = node.fullName;
 					const showBranchBtn = document.createElement('span');
 					showBranchBtn.classList.add('show-branch');
 					showBranchBtn.classList.toggle('active', this.branches.find(b => b.name === node.fullName)?.visibility === ForkBranchVisibility.Filtered);
@@ -2610,9 +2611,16 @@ class GitGraphView {
 
 	private applyBranchTreeFilter() {
 		this.branchFilter = this.branchFilterElem.value;
-		const branches = Array.from(document.querySelectorAll('#branch-tree li')!);
-		for (const branch of branches) {
-			branch.classList.toggle('d-none', (branch as HTMLElement)?.dataset?.branchName?.toLowerCase().includes(this.branchFilter.toLowerCase()));
+		const liElements = Array.from(document.querySelectorAll('#branch-tree li')!);
+		const needle = this.branchFilter.toLowerCase();
+		for (const liElement of liElements) {
+			const b = liElement as HTMLElement;
+			if (!b?.dataset?.branchName) {
+				continue;
+			}
+
+			const includes = b?.dataset?.branchName?.toLowerCase().includes(needle);
+			liElement.classList.toggle('d-none', !includes);
 		}
 	}
 

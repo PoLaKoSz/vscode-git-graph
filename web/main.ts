@@ -2612,7 +2612,7 @@ class GitGraphView {
 		this.branchFilter = this.branchFilterElem.value;
 		const branches = Array.from(document.querySelectorAll('#branch-tree li')!);
 		for (const branch of branches) {
-			branch.classList.toggle('d-none', !branch.textContent?.toLowerCase().includes(this.branchFilter.toLowerCase()));
+			branch.classList.toggle('d-none', (branch as HTMLElement)?.dataset?.branchName?.toLowerCase().includes(this.branchFilter.toLowerCase()));
 		}
 	}
 
